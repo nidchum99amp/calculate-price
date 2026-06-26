@@ -1,1 +1,337 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำนวณราคาประตูม้วน</title>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  min-height: 100vh; padding: 16px;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.container { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 0; }
+.header { animation: slideUp 0.6s ease-out; width: 100%; max-width: 420px; margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; color: #000; margin-bottom: 8px; letter-spacing: -0.5px; }
+.header p { font-size: 14px; color: #666; }
+.card {
+  animation: slideUp 0.7s ease-out;
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 24px; width: 100%; max-width: 420px;
+}
+.form-section { margin-bottom: 28px; }
+.form-label {
+  display: block; font-size: 13px; font-weight: 600; color: #000;
+  margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.thickness-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.thickness-btn {
+  padding: 12px 16px; border: 2px solid #e0e0e0; background: #fff;
+  border-radius: 10px; font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.thickness-btn.active { border-color: #ffd51e; background: #ffd51e; color: #000; }
+.color-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+.color-btn {
+  width: 56px; height: 56px; border-radius: 50%; border: 3px solid #e0e0e0;
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.color-btn.active { border-color: #000; transform: scale(1.15); box-shadow: 0 0 0 2px #fff, 0 4px 12px rgba(0,0,0,0.15); }
+.color-checkmark {
+  position: absolute; bottom: 6px; right: 6px; font-size: 12px;
+  background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px;
+  font-weight: 600; color: #000; opacity: 0; transition: opacity 0.3s ease;
+}
+.color-btn.active .color-checkmark { opacity: 1; }
+.image-preview { margin: 24px 0; text-align: center; display: none; }
+.image-preview.show { display: block; }
+.image-preview img { max-width: 100%; border-radius: 12px; max-height: 280px; object-fit: cover; }
+.size-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.size-inputs input, .location-input {
+  width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease; background: #fff;
+}
+.size-inputs input:focus, .location-input:focus {
+  border-color: #ffd51e; box-shadow: 0 0 0 3px rgba(255,213,30,0.1); outline: none;
+}
+.calculate-btn {
+  width: 100%; padding: 14px 24px;
+  background: linear-gradient(135deg, #ffd51e 0%, #ffcc00 100%);
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  color: #000; cursor: pointer; box-shadow: 0 4px 12px rgba(255,213,30,0.3);
+  transition: all 0.3s ease;
+}
+.calculate-btn:hover { transform: translateY(-2px); }
+.result-card {
+  background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 28px 24px; width: 100%; max-width: 420px; margin-top: 20px;
+  opacity: 0; transition: opacity 0.5s ease-out; pointer-events: none;
+}
+.result-card.show { opacity: 1; pointer-events: auto; }
+.result-title { font-size: 12px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.result-value { display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px; }
+.result-number { font-size: 32px; font-weight: 700; color: #000; }
+.result-unit { font-size: 16px; color: #666; font-weight: 500; }
+.price-box {
+  background: linear-gradient(135deg, rgba(255,213,30,0.1) 0%, rgba(255,213,30,0.05) 100%);
+  border-left: 4px solid #ffd51e; padding: 16px; border-radius: 8px; margin-bottom: 20px;
+}
+.price-label { font-size: 12px; color: #666; margin-bottom: 8px; }
+.price-value { display: flex; align-items: baseline; gap: 8px; }
+.price-number { font-size: 28px; font-weight: 700; color: #000; }
+.price-unit { font-size: 14px; color: #666; }
+.result-note { font-size: 11px; color: #999; line-height: 1.6; text-align: center; margin-bottom: 16px; }
+.submit-btn {
+  width: 100%; padding: 14px 24px; background: #06C755;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(6,199,85,0.3);
+  transition: all 0.3s ease;
+}
+.submit-btn:hover { background: #05a847; transform: translateY(-2px); }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.success-msg {
+  display: none; margin-top: 16px; padding: 14px;
+  background: #e8f8ee; border-radius: 10px; text-align: center;
+  font-size: 14px; color: #06C755; font-weight: 600;
+}
+.success-msg.show { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>คำนวณราคาประตูม้วน</h1>
+    <p>เลือกความหนา ระบุขนาด และคำนวณราคาทันที</p>
+  </div>
 
+  <div class="card">
+    <div class="form-section">
+      <label class="form-label">✦ ความหนาของใบประตู</label>
+      <div class="thickness-buttons" id="thicknessButtons"></div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">✦ เลือกสี</label>
+      <div class="color-buttons" id="colorButtons"></div>
+    </div>
+    <div class="image-preview" id="imagePreview">
+      <img id="colorImage" src="" alt="ตัวอย่างประตูม้วน" />
+    </div>
+    <div class="form-section">
+      <label class="form-label">✦ ขนาด (กว้าง × สูง ซม.)</label>
+      <div class="size-inputs">
+        <input type="number" id="widthInput" placeholder="กว้าง (ซม.)" step="0.1" min="0" />
+        <input type="number" id="heightInput" placeholder="สูง (ซม.)" step="0.1" min="0" />
+      </div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">✦ สถานที่ติดตั้ง</label>
+      <input type="text" class="location-input" id="locationInput" placeholder="เช่น บ้านพัก ออฟฟิศ โรงงาน..." />
+    </div>
+    <button class="calculate-btn" id="calculateBtn">คำนวณราคา</button>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-title">ผลการคำนวณ</div>
+    <div class="result-value">
+      <span class="result-number" id="areaDisplay">0</span>
+      <span class="result-unit">ตร.ม.</span>
+    </div>
+    <div class="price-box">
+      <p class="price-label">ราคาเบื้องต้น (ไม่รวมค่าติดตั้ง)</p>
+      <div class="price-value">
+        <span class="price-number" id="priceDisplay">0</span>
+        <span class="price-unit">บาท</span>
+      </div>
+    </div>
+    <p class="result-note">💡 ราคานี้เป็นราคาเบื้องต้นเท่านั้น ยังไม่รวมค่าติดตั้งและอื่นๆ<br>กดปุ่มด้านล่างเพื่อให้ทีมงานติดต่อกลับพร้อมใบเสนอราคาจริง</p>
+    <button class="submit-btn" id="submitBtn">📩 ขอใบเสนอราคาจริง</button>
+    <div class="success-msg" id="successMsg">✅ ส่งข้อมูลเรียบร้อย! ทีมงานจะติดต่อกลับเร็วๆ นี้</div>
+  </div>
+</div>
+
+<script>
+const LIFF_ID = '2010511935-bJKtqX9h';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzUKA-2ZC7qkFCSDHg6wDxBZNTg9EjNZHzR5Agrb77VWiNOIG71s1qXQ0twsI7nobRqwQ/exec';
+
+const thicknessOptions = [
+  { label: '0.38 มิล.', value: '0.38', price: 630 },
+  { label: '0.43 มิล.', value: '0.43', price: 650 },
+  { label: '0.6 มิล.',  value: '0.6',  price: 750 }
+];
+
+const colorsByThickness = {
+  '0.38': [
+    { name: 'เทา',  value: '#808080', image: 'claude/gray.jpg' },
+    { name: 'ครีม', value: '#F5E6D3', image: 'claude/cream.jpg' }
+  ],
+  '0.43': [
+    { name: 'เทา',     value: '#808080', image: 'claude/gray.jpg' },
+    { name: 'ครีม',    value: '#F5E6D3', image: 'claude/cream.jpg' },
+    { name: 'แดง',     value: '#E63946', image: 'claude/red.jpg' },
+    { name: 'ส้ม',     value: '#FF9500', image: 'claude/orange.jpg' },
+    { name: 'ขาว',     value: '#FFFFFF', image: 'claude/white.jpg' },
+    { name: 'ดำ',      value: '#000000', image: 'claude/black.jpg' },
+    { name: 'น้ำเงิน', value: '#003D7A', image: 'claude/navy.jpg' },
+    { name: 'ฟ้า',     value: '#0088CC', image: 'claude/blue.jpg' },
+    { name: 'เขียว',   value: '#2D6A4F', image: 'claude/green.jpg' }
+  ],
+  '0.6': [
+    { name: 'เทา',  value: '#808080', image: 'claude/gray.jpg' },
+    { name: 'ครีม', value: '#F5E6D3', image: 'claude/cream.jpg' }
+  ]
+};
+
+let state = {
+  selectedThickness: '0.38',
+  selectedColor: '#808080',
+  selectedColorObj: colorsByThickness['0.38'][0],
+  selectedColorName: 'เทา',
+  userName: 'ไม่ระบุ',
+  lineUserId: 'ไม่ระบุ'
+};
+
+let lastCalc = {};
+
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      state.userName = profile.displayName;
+      state.lineUserId = profile.userId;
+    }
+  } catch(e) { console.warn('LIFF:', e); }
+}
+
+function renderThicknessButtons() {
+  document.getElementById('thicknessButtons').innerHTML =
+    thicknessOptions.map(opt =>
+      `<button class="thickness-btn ${state.selectedThickness === opt.value ? 'active' : ''}" data-value="${opt.value}">${opt.label}</button>`
+    ).join('');
+  document.querySelectorAll('.thickness-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedThickness = btn.dataset.value;
+      state.selectedColorObj = colorsByThickness[btn.dataset.value][0];
+      state.selectedColor = state.selectedColorObj.value;
+      state.selectedColorName = state.selectedColorObj.name;
+      renderThicknessButtons();
+      renderColorButtons();
+      updateImagePreview();
+    });
+  });
+}
+
+function renderColorButtons() {
+  const colors = colorsByThickness[state.selectedThickness];
+  document.getElementById('colorButtons').innerHTML =
+    colors.map(c =>
+      `<button class="color-btn ${state.selectedColor === c.value ? 'active' : ''}"
+        data-value="${c.value}" data-name="${c.name}" data-image="${c.image}"
+        title="${c.name}" style="background-color:${c.value};">
+        <span class="color-checkmark">✓</span>
+      </button>`
+    ).join('');
+  document.querySelectorAll('.color-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedColor = btn.dataset.value;
+      state.selectedColorName = btn.dataset.name;
+      state.selectedColorObj = colors.find(c => c.value === btn.dataset.value);
+      renderColorButtons();
+      updateImagePreview();
+    });
+  });
+}
+
+function updateImagePreview() {
+  if (state.selectedColorObj?.image) {
+    document.getElementById('colorImage').src = state.selectedColorObj.image;
+    document.getElementById('imagePreview').classList.add('show');
+  }
+}
+
+function calculate() {
+  const width    = parseFloat(document.getElementById('widthInput').value);
+  const height   = parseFloat(document.getElementById('heightInput').value);
+  const location = document.getElementById('locationInput').value.trim();
+
+  if (!width || !height || width <= 0 || height <= 0) {
+    alert('กรุณากรอกขนาดที่ถูกต้อง'); return;
+  }
+  if (!location) {
+    alert('กรุณากรอกสถานที่ติดตั้ง');
+    document.getElementById('locationInput').focus(); return;
+  }
+
+  const area  = Math.round((width / 100) * (height / 100) * 100) / 100;
+  const opt   = thicknessOptions.find(o => o.value === state.selectedThickness);
+  const price = Math.round(area * opt.price);
+
+  document.getElementById('areaDisplay').textContent  = area.toFixed(2);
+  document.getElementById('priceDisplay').textContent = price.toLocaleString('th-TH');
+  document.getElementById('resultCard').classList.add('show');
+  document.getElementById('successMsg').classList.remove('show');
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = false;
+  submitBtn.textContent = '📩 ขอใบเสนอราคาจริง';
+
+  lastCalc = { width, height, area, price, location };
+}
+
+async function submitToSheets() {
+  if (!lastCalc.width) { alert('กรุณาคำนวณราคาก่อน'); return; }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ กำลังส่งข้อมูล...';
+
+  const payload = {
+    name:      state.userName,
+    lineId:    state.lineUserId,
+    width:     lastCalc.width,
+    height:    lastCalc.height,
+    thickness: state.selectedThickness,
+    location:  lastCalc.location,
+    area:      lastCalc.area,
+    price:     lastCalc.price
+  };
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    document.getElementById('successMsg').classList.add('show');
+    submitBtn.textContent = '✅ ส่งแล้ว';
+  } catch(err) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📩 ขอใบเสนอราคาจริง';
+    alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
+}
+
+document.getElementById('calculateBtn').addEventListener('click', calculate);
+document.getElementById('submitBtn').addEventListener('click', submitToSheets);
+['widthInput','heightInput','locationInput'].forEach(id => {
+  document.getElementById(id).addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+});
+
+renderThicknessButtons();
+renderColorButtons();
+updateImagePreview();
+initLiff();
+</script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นัดประเมินหน้างาน</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;min-height:100vh}
+.wrap{max-width:420px;margin:0 auto;background:#fff;min-height:100vh;display:flex;flex-direction:column}
+
+.hdr{background:#06c755;color:#fff;padding:1.5rem 1.25rem 2rem;text-align:center}
+.hdr-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:500;margin-bottom:10px}
+.hdr h1{font-size:19px;font-weight:600;line-height:1.4;margin-bottom:5px}
+.hdr p{font-size:12px;opacity:.85;line-height:1.6}
+
+.prog{height:3px;background:#d4f5e1}
+.prog-fill{height:100%;background:#06c755;transition:width .35s ease}
+
+.steps{display:flex;background:#fff;border-bottom:1px solid #f0f0f0}
+.stp{flex:1;text-align:center;padding:10px 4px;font-size:11px;color:#aaa;border-bottom:2px solid transparent;transition:all .2s}
+.stp.active{color:#06c755;border-bottom:2px solid #06c755;font-weight:600}
+.stp.done{color:#06c755}
+.stp-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#f5f5f5;border:1px solid #ddd;font-size:10px;margin-bottom:3px}
+.stp.active .stp-n,.stp.done .stp-n{background:#06c755;color:#fff;border-color:#06c755}
+
+.pg{display:none;padding:1.25rem;flex:1}
+.pg.active{display:block}
+
+.stit{font-size:10.5px;font-weight:600;color:#aaa;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.85rem;padding-bottom:8px;border-bottom:1px solid #f0f0f0}
+
+.fld{margin-bottom:1rem}
+.fld label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#555;margin-bottom:6px}
+.fld label i{font-size:15px;color:#06c755}
+.req{color:#e24b4a;font-size:11px;margin-left:1px}
+.fld input,.fld textarea{width:100%;font-size:14px;color:#222;background:#fafafa;border:1px solid #e8e8e8;border-radius:10px;padding:10px 13px;outline:none;transition:border-color .15s}
+.fld input:focus,.fld textarea:focus{border-color:#06c755;background:#fff;box-shadow:0 0 0 3px rgba(6,199,85,.1)}
+.fld textarea{resize:none;line-height:1.6}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.25rem}
+.pc{border:1px solid #e8e8e8;border-radius:14px;padding:15px 12px;cursor:pointer;transition:all .18s;background:#fff;position:relative}
+.pc:active{transform:scale(.97)}
+.pc:hover{border-color:#06c755;background:#f0fdf4}
+.pc.sel{border:2px solid #06c755;background:#f0fdf4}
+.pc .ck{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:50%;background:#06c755;display:none;align-items:center;justify-content:center}
+.pc.sel .ck{display:flex}
+.pc .ck i{font-size:11px;color:#fff}
+.pico{font-size:24px;margin-bottom:9px;line-height:1}
+.pnm{font-size:13px;font-weight:600;color:#222;margin-bottom:3px;line-height:1.35}
+.psub{font-size:11px;color:#999;line-height:1.4}
+.pc.full{grid-column:1/-1}
+.pc.full .inner{display:flex;align-items:center;gap:12px}
+.pc.full .inner .pico{margin:0;font-size:22px}
+
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tc{border:1px solid #e8e8e8;border-radius:10px;padding:11px;text-align:center;cursor:pointer;transition:all .15s;background:#fafafa}
+.tc:hover{border-color:#06c755;background:#f0fdf4}
+.tc.sel{border:2px solid #06c755;background:#f0fdf4}
+.tci{font-size:20px;margin-bottom:4px}
+.tcl{font-size:12px;font-weight:600;color:#222}
+.tcs{font-size:11px;color:#999;margin-top:2px}
+
+.nav{display:flex;gap:10px;padding:1rem 1.25rem;background:#fff;border-top:1px solid #f0f0f0}
+.bb{flex:0 0 auto;padding:12px 18px;border:1px solid #e8e8e8;border-radius:12px;font-size:14px;cursor:pointer;background:#fafafa;color:#666}
+.bn{flex:1;padding:13px;background:#06c755;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.bn:hover{background:#00a041}
+.bn:active{transform:scale(.98)}
+
+.done-wrap{padding:1.25rem}
+.sban{background:#06c755;color:#fff;border-radius:16px;padding:1.75rem 1.25rem;text-align:center;margin-bottom:1rem}
+.sban i{font-size:40px;display:block;margin-bottom:10px}
+.sban h2{font-size:17px;font-weight:600;margin-bottom:4px}
+.sban p{font-size:12px;opacity:.85}
+.mlbl{font-size:11px;color:#aaa;display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.mbbl{background:#f0fdf4;border:1px solid #9fe1cb;border-radius:14px;padding:1rem 1.15rem;font-size:13.5px;line-height:1.9;color:#222;white-space:pre-line}
+.hint{font-size:12px;color:#aaa;text-align:center;margin-top:.85rem;line-height:1.6}
+.breset{width:100%;margin-top:.75rem;padding:12px;background:#fafafa;color:#666;border:1px solid #e8e8e8;border-radius:12px;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-badge"><i class="ti ti-shield-check" style="font-size:12px"></i> ประเมินหน้างานฟรี</div>
+  <h1>นัดประเมินหน้างาน<br>ติดตั้งประตูม้วน</h1>
+  <p>กรอกข้อมูลเพียงไม่กี่ขั้นตอน<br>ทีมงานติดต่อกลับภายใน 1 วันทำการ</p>
+</div>
+
+<div class="prog"><div class="prog-fill" id="prog" style="width:33%"></div></div>
+
+<div class="steps" id="stepsBar">
+  <div class="stp active" id="s1"><div class="stp-n" id="sn1">1</div><div>ข้อมูล</div></div>
+  <div class="stp" id="s2"><div class="stp-n" id="sn2">2</div><div>สินค้า</div></div>
+  <div class="stp" id="s3"><div class="stp-n" id="sn3">3</div><div>นัดหมาย</div></div>
+</div>
+
+<!-- หน้า 1: ข้อมูลติดต่อ -->
+<div class="pg active" id="p1">
+  <div class="stit">ข้อมูลติดต่อ</div>
+  <div class="fld">
+    <label><i class="ti ti-user"></i>ชื่อ-นามสกุล<span class="req">*</span></label>
+    <input type="text" id="fn" placeholder="เช่น คุณสมหญิง ใจดี">
+  </div>
+  <div class="fld">
+    <label><i class="ti ti-phone"></i>เบอร์ติดต่อ<span class="req">*</span></label>
+    <input type="tel" id="fp" placeholder="0812345678">
+  </div>
+  <div class="fld">
+    <label><i class="ti ti-map-pin"></i>สถานที่ติดตั้ง<span class="req">*</span></label>
+    <input type="text" id="fl" placeholder="บ้าน / อาคาร / โรงงาน พร้อมพื้นที่">
+  </div>
+  <div class="stit" style="margin-top:1.25rem">ขนาดช่องประตู (ไม่แน่ใจข้ามได้)</div>
+  <div class="r2">
+    <div class="fld"><label><i class="ti ti-arrows-horizontal"></i>กว้าง (ซม.)</label><input type="number" id="fw" placeholder="เช่น 300"></div>
+    <div class="fld"><label><i class="ti ti-arrows-vertical"></i>สูง (ซม.)</label><input type="number" id="fh" placeholder="เช่น 220"></div>
+  </div>
+</div>
+
+<!-- หน้า 2: เลือกสินค้า -->
+<div class="pg" id="p2">
+  <div class="stit">เลือกประเภทสินค้าที่สนใจ</div>
+  <div class="pgrid" id="prodGrid">
+    <div class="pc" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="pico">🔄</div>
+      <div class="pnm">ประตูม้วน<br>ระบบสปริง</div>
+      <div class="psub">เปิด-ปิดด้วยมือ<br>ราคาประหยัด</div>
+    </div>
+    <div class="pc" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="pico">⚡</div>
+      <div class="pnm">ประตูม้วน<br>ระบบไฟฟ้า</div>
+      <div class="psub">มอเตอร์ในตัว<br>รีโมทคอนโทรล</div>
+    </div>
+    <div class="pc" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="pico">🚗</div>
+      <div class="pnm">มอเตอร์ประตู<br>รั้วสวิง</div>
+      <div class="psub">ประตูบานสวิง<br>อัตโนมัติ</div>
+    </div>
+    <div class="pc" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="pico">↔️</div>
+      <div class="pnm">มอเตอร์ประตู<br>รั้วเลื่อน</div>
+      <div class="psub">ประตูบานเลื่อน<br>อัตโนมัติ</div>
+    </div>
+    <div class="pc full" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="inner">
+        <div class="pico">🏠</div>
+        <div>
+          <div class="pnm">ประตูโรงรถอัตโนมัติ (Garage Door)</div>
+          <div class="psub">เปิด-ปิดพับขึ้นด้านบน เหมาะสำหรับโรงรถบ้านพักอาศัย</div>
+        </div>
+      </div>
+    </div>
+    <div class="pc full" onclick="sp(this)">
+      <div class="ck"><i class="ti ti-check"></i></div>
+      <div class="inner">
+        <div class="pico">💬</div>
+        <div>
+          <div class="pnm">ยังไม่แน่ใจ ขอคำแนะนำ</div>
+          <div class="psub">ทีมงานจะแนะนำสินค้าที่เหมาะกับคุณ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- หน้า 3: นัดหมาย -->
+<div class="pg" id="p3">
+  <div class="stit">วันและเวลาที่สะดวก</div>
+  <div class="fld">
+    <label><i class="ti ti-calendar"></i>วันที่ต้องการนัด</label>
+    <input type="date" id="fd">
+  </div>
+  <div class="fld">
+    <label><i class="ti ti-clock"></i>ช่วงเวลา</label>
+    <div class="tgrid" id="tg">
+      <div class="tc" onclick="st(this)"><div class="tci">🌅</div><div class="tcl">ช่วงเช้า</div><div class="tcs">9:00 – 12:00</div></div>
+      <div class="tc" onclick="st(this)"><div class="tci">☀️</div><div class="tcl">ช่วงบ่าย</div><div class="tcs">13:00 – 17:00</div></div>
+      <div class="tc" onclick="st(this)"><div class="tci">📞</div><div class="tcl">ให้ทีมงานโทรนัด</div><div class="tcs">ยืดหยุ่นได้</div></div>
+      <div class="tc" onclick="st(this)"><div class="tci">⚡</div><div class="tcl">เร็วที่สุด</div><div class="tcs">ด่วน / เร่งด่วน</div></div>
+    </div>
+  </div>
+  <div class="fld">
+    <label><i class="ti ti-notes"></i>หมายเหตุ / รายละเอียดเพิ่มเติม</label>
+    <textarea id="fnote" rows="3" placeholder="เช่น มีประตูเก่าที่ต้องรื้อ / ต้องการสีพิเศษ / ข้อจำกัดเรื่องเวลาเข้าพื้นที่"></textarea>
+  </div>
+</div>
+
+<!-- หน้ายืนยัน -->
+<div class="done-wrap" id="pDone" style="display:none">
+  <div class="sban">
+    <i class="ti ti-circle-check"></i>
+    <h2>ส่งข้อมูลเรียบร้อยแล้ว!</h2>
+    <p>ทีมงานจะโทรยืนยันภายใน 1 วันทำการ</p>
+  </div>
+  <div class="mlbl"><i class="ti ti-message-circle" style="font-size:13px"></i>ข้อความตอบกลับลูกค้า</div>
+  <div class="mbbl" id="msgOut"></div>
+  <div class="hint">📌 หากต้องการเปลี่ยนแปลง พิมพ์ "สอบถาม" หรือ "เปลี่ยนนัด" ได้เลย</div>
+  <button class="breset" onclick="rst()">← กรอกข้อมูลใหม่</button>
+</div>
+
+<div class="nav" id="navBar">
+  <button class="bb" id="btnBack" onclick="go(-1)" style="display:none"><i class="ti ti-arrow-left"></i></button>
+  <button class="bn" id="btnNext" onclick="go(1)">ถัดไป <i class="ti ti-arrow-right"></i></button>
+</div>
+
+</div>
+
+<script>
+let cur=1,total=3;
+function go(d){
+  if(d===1){
+    if(cur===1){
+      if(!document.getElementById('fn').value.trim()||!document.getElementById('fp').value.trim()||!document.getElementById('fl').value.trim()){
+        alert('กรุณากรอกชื่อ เบอร์ และสถานที่ให้ครบก่อนครับ/ค่ะ');return;
+      }
+    }
+    if(cur===2&&!document.querySelector('#prodGrid .pc.sel')){
+      alert('กรุณาเลือกประเภทสินค้าที่สนใจอย่างน้อย 1 รายการ');return;
+    }
+    if(cur===total){sub();return;}
+  }
+  cur=Math.max(1,Math.min(total,cur+d));
+  ren();
+}
+function ren(){
+  for(let i=1;i<=total;i++){
+    document.getElementById('p'+i).classList.toggle('active',i===cur);
+    const s=document.getElementById('s'+i),sn=document.getElementById('sn'+i);
+    s.classList.remove('active','done');
+    if(i===cur)s.classList.add('active');
+    else if(i<cur){s.classList.add('done');sn.innerHTML='<i class="ti ti-check" style="font-size:10px"></i>';}
+    else sn.textContent=i;
+  }
+  document.getElementById('prog').style.width=(cur/total*100)+'%';
+  document.getElementById('btnBack').style.display=cur>1?'flex':'none';
+  document.getElementById('btnNext').innerHTML=cur===total?'ส่งข้อมูล <i class="ti ti-send"></i>':'ถัดไป <i class="ti ti-arrow-right"></i>';
+}
+function sp(el){
+  document.querySelectorAll('#prodGrid .pc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function st(el){
+  document.querySelectorAll('#tg .tc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function fmtDate(d){
+  if(!d)return'ไม่ได้ระบุ';
+  const[y,m,dd]=d.split('-');
+  return`${+dd} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][+m-1]} ${+y+543}`;
+}
+function getProdName(){
+  const prod=document.querySelector('#prodGrid .pc.sel');
+  if(!prod)return'ไม่ได้ระบุ';
+  const nm=prod.querySelector('.pnm');
+  return nm?nm.innerText.replace(/\n/g,' '):'ไม่ได้ระบุ';
+}
+function sub(){
+  const name=document.getElementById('fn').value.trim();
+  const phone=document.getElementById('fp').value.trim();
+  const loc=document.getElementById('fl').value.trim();
+  const w=document.getElementById('fw').value,h=document.getElementById('fh').value;
+  const size=(w&&h)?`${w}×${h} ซม.`:(w||h)?`${w||h} ซม.`:'ยังไม่ระบุ';
+  const prodName=getProdName();
+  const tSel=document.querySelector('#tg .tc.sel');
+  const timeStr=tSel?tSel.querySelector('.tcl').innerText:'ไม่ได้ระบุ';
+  const note=document.getElementById('fnote').value.trim()||'ไม่มี';
+  document.getElementById('msgOut').textContent=
+`สวัสดีครับ/ค่ะ คุณ${name} 🙏
+
+ขอบคุณที่ไว้วางใจนัดประเมินหน้างานกับเราครับ/ค่ะ ได้รับข้อมูลเรียบร้อยแล้ว ดังนี้
+
+👤 ชื่อ: ${name}
+📞 เบอร์: ${phone}
+📍 สถานที่: ${loc}
+📐 ขนาดช่อง: ${size}
+
+🛒 สินค้าที่สนใจ: ${prodName}
+
+📅 วันที่นัด: ${fmtDate(document.getElementById('fd').value)}
+🕐 ช่วงเวลา: ${timeStr}
+📝 หมายเหตุ: ${note}
+
+✅ ทีมงานจะโทรยืนยันนัดภายใน 1 วันทำการนะครับ/ค่ะ
+หากต้องการเปลี่ยนแปลงหรือสอบถามเพิ่มเติม พิมพ์ "สอบถาม" ได้เลยครับ/ค่ะ 😊`;
+  [1,2,3].forEach(i=>document.getElementById('p'+i).classList.remove('active'));
+  document.getElementById('navBar').style.display='none';
+  document.getElementById('stepsBar').style.display='none';
+  document.querySelector('.prog').style.display='none';
+  document.getElementById('pDone').style.display='block';
+}
+function rst(){
+  cur=1;
+  ['fn','fp','fl','fw','fh','fd','fnote'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('.pc,.tc').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pDone').style.display='none';
+  document.getElementById('navBar').style.display='flex';
+  document.getElementById('stepsBar').style.display='flex';
+  document.querySelector('.prog').style.display='block';
+  ren();
+}
+ren();
+</script>
+</body>
+</html>

@@ -264,30 +264,39 @@ function sub(){
   const name=document.getElementById('fn').value.trim();
   const phone=document.getElementById('fp').value.trim();
   const loc=document.getElementById('fl').value.trim();
-  const w=document.getElementById('fw').value,h=document.getElementById('fh').value;
-  const size=(w&&h)?`${w}×${h} ซม.`:(w||h)?`${w||h} ซม.`:'ยังไม่ระบุ';
-  const prodName=getProdName();
+  if(!name||!phone||!loc){alert('กรุณากรอกชื่อ เบอร์ และสถานที่ให้ครบก่อนครับ/ค่ะ');return;}
+
+  const w=document.getElementById('fw').value;
+  const h=document.getElementById('fh').value;
+  const prod=document.querySelector('#prodGrid .pc.sel');
+  const pnEl=prod?prod.querySelector('.pnm'):null;
+  const prodName=pnEl?pnEl.innerText.replace(/\n/g,' '):'ไม่ได้ระบุ';
   const tSel=document.querySelector('#tg .tc.sel');
   const timeStr=tSel?tSel.querySelector('.tcl').innerText:'ไม่ได้ระบุ';
   const note=document.getElementById('fnote').value.trim()||'ไม่มี';
+  const dateVal=document.getElementById('fd').value;
+
+  // ส่งข้อมูลไป Google Sheet
+  const GAS_URL='https://script.google.com/macros/s/AKfycbzbjjJXBjYpvle_cHtC5Y_Tj0b-d9boFOvQT3w_uMZgaNCY7ZkMJmk-Z0Rma52Q854Y/exec';
+  const formData=new FormData();
+  formData.append('name', name);
+  formData.append('phone', phone);
+  formData.append('location', loc);
+  formData.append('width', w||'ไม่ระบุ');
+  formData.append('height', h||'ไม่ระบุ');
+  formData.append('product', prodName);
+  formData.append('date', dateVal||'ไม่ระบุ');
+  formData.append('time', timeStr);
+  formData.append('note', note);
+
+  fetch(GAS_URL, { method:'POST', mode:'no-cors', body:formData })
+    .catch(()=>{});
+
+  // แสดงหน้ายืนยัน
+  const size=(w&&h)?`${w}×${h} ซม.`:(w||h)?`${w||h} ซม.`:'ยังไม่ระบุ';
   document.getElementById('msgOut').textContent=
-`สวัสดีครับ/ค่ะ คุณ${name} 🙏
+`สวัสดีครับ/ค่ะ คุณ${name} 🙏\n\nขอบคุณที่ไว้วางใจนัดประเมินหน้างานกับเราครับ/ค่ะ ได้รับข้อมูลเรียบร้อยแล้ว ดังนี้\n\n👤 ชื่อ: ${name}\n📞 เบอร์: ${phone}\n📍 สถานที่: ${loc}\n📐 ขนาดช่อง: ${size}\n\n🛒 สินค้าที่สนใจ: ${prodName}\n\n📅 วันที่นัด: ${fmtDate(dateVal)}\n🕐 ช่วงเวลา: ${timeStr}\n📝 หมายเหตุ: ${note}\n\n✅ ทีมงานจะโทรยืนยันนัดภายใน 1 วันทำการนะครับ/ค่ะ\nหากต้องการเปลี่ยนแปลงหรือสอบถามเพิ่มเติม พิมพ์ "สอบถาม" ได้เลยครับ/ค่ะ 😊`;
 
-ขอบคุณที่ไว้วางใจนัดประเมินหน้างานกับเราครับ/ค่ะ ได้รับข้อมูลเรียบร้อยแล้ว ดังนี้
-
-👤 ชื่อ: ${name}
-📞 เบอร์: ${phone}
-📍 สถานที่: ${loc}
-📐 ขนาดช่อง: ${size}
-
-🛒 สินค้าที่สนใจ: ${prodName}
-
-📅 วันที่นัด: ${fmtDate(document.getElementById('fd').value)}
-🕐 ช่วงเวลา: ${timeStr}
-📝 หมายเหตุ: ${note}
-
-✅ ทีมงานจะโทรยืนยันนัดภายใน 1 วันทำการนะครับ/ค่ะ
-หากต้องการเปลี่ยนแปลงหรือสอบถามเพิ่มเติม พิมพ์ "สอบถาม" ได้เลยครับ/ค่ะ 😊`;
   [1,2,3].forEach(i=>document.getElementById('p'+i).classList.remove('active'));
   document.getElementById('navBar').style.display='none';
   document.getElementById('stepsBar').style.display='none';

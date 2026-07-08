@@ -356,25 +356,28 @@ document.getElementById('submitBtn').addEventListener('click', submitToSheets);
   document.getElementById(id).addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
 });
 
-document.getElementById('callBtn').addEventListener('click', async () => {
+document.getElementById('callBtn').addEventListener('click', () => {
+  const phone = prompt('กรุณากรอกเบอร์โทรที่ต้องการให้ติดต่อกลับ:');
+  if (!phone || phone.trim() === '') return;
+
   const btn = document.getElementById('callBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="btn-icon">⏳</span><span>กำลังส่ง...</span>';
-  try {
-    await sendData('โทรกลับ');
-    btn.innerHTML = '<span class="btn-icon">✅</span><span>รับทราบแล้ว!</span>';
-    setTimeout(() => alert('✅ ทีมงานจะโทรกลับหาคุณเร็วๆ นี้ครับ!'), 300);
-  } catch(e) {
-    btn.disabled = false;
-    btn.innerHTML = '<span class="btn-icon">📞</span><span>ให้แอดมิน<br>โทรกลับ</span>';
-  }
+
+  sendData('โทรกลับ เบอร์: ' + phone.trim());
+  btn.innerHTML = '<span class="btn-icon">✅</span><span>รับทราบแล้ว!</span>';
+  alert('✅ ทีมงานจะโทรกลับหาคุณที่เบอร์ ' + phone.trim() + ' เร็วๆ นี้ครับ!');
 });
 
 document.getElementById('chatBtn').addEventListener('click', () => {
   try {
-    liff.closeWindow();
+    if (liff.isInClient()) {
+      liff.closeWindow();
+    } else {
+      window.location.href = 'https://line.me/R/oaMessage/@Tshutterone';
+    }
   } catch(e) {
-    alert('กรุณากลับไปที่แชท Line เพื่อคุยกับทีมงานครับ');
+    window.location.href = 'https://line.me/R/oaMessage/@Tshutterone';
   }
 });
 

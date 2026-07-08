@@ -300,7 +300,7 @@ function renderColorButtons() {
 }
 
 function updateImagePreview() {
-  if (state.selectedColorObj?.image) {
+  if (state.selectedColorObj && state.selectedColorObj.image) {
     document.getElementById('colorImage').src = state.selectedColorObj.image;
     document.getElementById('imagePreview').classList.add('show');
   }

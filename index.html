@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>คำนวณราคาประตูม้วน</title>
-<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -118,18 +118,13 @@ body {
 .contact-btn:hover { transform: translateY(-3px); }
 .contact-btn .btn-icon { font-size: 24px; }
 .contact-btn-call { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #e65100; box-shadow: 0 4px 12px rgba(230,81,0,0.15); }
-.contact-btn-call:hover { box-shadow: 0 8px 20px rgba(230,81,0,0.25); }
 .contact-btn-chat { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #1b5e20; box-shadow: 0 4px 12px rgba(27,94,32,0.15); }
-.contact-btn-chat:hover { box-shadow: 0 8px 20px rgba(27,94,32,0.25); }
 .phone-section {
   display: none; margin-top: 16px;
   background: #f9f9f9; border-radius: 12px; padding: 16px;
 }
 .phone-section.show { display: block; }
-.phone-bubble {
-  font-size: 13px; color: #555; line-height: 1.8;
-  margin-bottom: 12px; text-align: center;
-}
+.phone-bubble { font-size: 13px; color: #555; line-height: 1.8; margin-bottom: 12px; text-align: center; }
 .phone-bubble strong { color: #000; }
 .phone-input {
   width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0;
@@ -137,9 +132,7 @@ body {
   margin-bottom: 10px; background: #fff; transition: all 0.3s ease;
   text-align: center; letter-spacing: 1px;
 }
-.phone-input:focus {
-  border-color: #ffd51e; box-shadow: 0 0 0 3px rgba(255,213,30,0.1); outline: none;
-}
+.phone-input:focus { border-color: #ffd51e; outline: none; }
 .confirm-call-btn {
   width: 100%; padding: 12px; background: #e65100;
   border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
@@ -214,12 +207,8 @@ body {
         </button>
       </div>
       <div class="phone-section" id="phoneSection">
-        <p class="phone-bubble">
-          ทิ้งเบอร์ไว้ได้เลยครับ 😊<br>
-          <strong>ทีมงานจะโทรหาคุณเร็วๆ นี้</strong>
-        </p>
-        <input type="tel" class="phone-input" id="phoneInput"
-          placeholder="0XX-XXX-XXXX" maxlength="10" />
+        <p class="phone-bubble">ทิ้งเบอร์ไว้ได้เลยครับ 😊<br><strong>ทีมงานจะโทรหาคุณเร็วๆ นี้</strong></p>
+        <input type="tel" class="phone-input" id="phoneInput" placeholder="0XX-XXX-XXXX" maxlength="10" />
         <button class="confirm-call-btn" id="confirmCallBtn">📞 ส่งเบอร์ให้ทีมงาน</button>
         <button class="skip-btn" id="skipBtn">ไม่ต้องโทรกลับแล้ว</button>
       </div>
@@ -270,17 +259,7 @@ let state = {
 
 let lastCalc = {};
 
-async function initLiff() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (liff.isLoggedIn()) {
-      const profile = await liff.getProfile();
-      state.userName = profile.displayName;
-      state.lineUserId = profile.userId;
-    }
-  } catch(e) { console.warn('LIFF:', e); }
-}
-
+// ===== RENDER ก่อนเลย =====
 function renderThicknessButtons() {
   document.getElementById('thicknessButtons').innerHTML =
     thicknessOptions.map(opt =>
@@ -327,6 +306,27 @@ function updateImagePreview() {
   }
 }
 
+// render ทันทีไม่รอ LIFF
+renderThicknessButtons();
+renderColorButtons();
+updateImagePreview();
+
+// ===== LIFF init ทีหลัง ไม่บล็อก UI =====
+liff.init({ liffId: LIFF_ID })
+  .then(() => {
+    if (liff.isLoggedIn()) {
+      return liff.getProfile();
+    }
+  })
+  .then(profile => {
+    if (profile) {
+      state.userName = profile.displayName;
+      state.lineUserId = profile.userId;
+    }
+  })
+  .catch(e => console.warn('LIFF error:', e));
+
+// ===== CALCULATE =====
 function calculate() {
   const width    = parseFloat(document.getElementById('widthInput').value);
   const height   = parseFloat(document.getElementById('heightInput').value);
@@ -358,6 +358,7 @@ function calculate() {
   lastCalc = { width, height, area, price, location };
 }
 
+// ===== POST DATA =====
 function buildPayload(contactType, phone) {
   return {
     name:        state.userName,
@@ -379,6 +380,7 @@ function postData(payload) {
   fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: form });
 }
 
+// ===== EVENT LISTENERS =====
 document.getElementById('calculateBtn').addEventListener('click', calculate);
 
 document.getElementById('submitBtn').addEventListener('click', () => {
@@ -399,9 +401,7 @@ document.getElementById('callBtn').addEventListener('click', () => {
 
 document.getElementById('confirmCallBtn').addEventListener('click', () => {
   const phone = document.getElementById('phoneInput').value.trim();
-  if (!phone) {
-    alert('ทิ้งเบอร์ไว้ก่อนได้เลยนะครับ 😊'); return;
-  }
+  if (!phone) { alert('ทิ้งเบอร์ไว้ก่อนได้เลยนะครับ 😊'); return; }
   const confirmBtn = document.getElementById('confirmCallBtn');
   confirmBtn.disabled = true;
   confirmBtn.textContent = '⏳ กำลังส่ง...';
@@ -414,3 +414,25 @@ document.getElementById('confirmCallBtn').addEventListener('click', () => {
 });
 
 document.getElementById('skipBtn').addEventListener('click', () => {
+  document.getElementById('phoneSection').classList.remove('show');
+  document.getElementById('phoneInput').value = '';
+});
+
+document.getElementById('chatBtn').addEventListener('click', () => {
+  try {
+    liff.sendMessages([{ type: 'text', text: 'สนใจสอบถามเพิ่มเติมครับ/ค่ะ 🙏' }])
+      .then(() => liff.closeWindow())
+      .catch(() => liff.closeWindow());
+  } catch(e) {
+    liff.closeWindow();
+  }
+});
+
+['widthInput','heightInput','locationInput'].forEach(id => {
+  document.getElementById(id).addEventListener('keypress', e => {
+    if(e.key==='Enter') calculate();
+  });
+});
+</script>
+</body>
+</html>

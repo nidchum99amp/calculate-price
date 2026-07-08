@@ -189,7 +189,7 @@ body {
 
 <script>
 const LIFF_ID = '2010511935-bJKtqX9h';
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbz1bjdDhoxqUP8Z_0kiUEPGoIEVX7Q7VdTofAtu8wigOggiJ5eRggyo0tenLtabEzaASQ/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby1tNzhFTXtHLBFcE4yUIXMf0ozygpp617jSLXNdezq9Df3ewpPat5hMNWtMSwQNkTzIQ/exec';
 
 const thicknessOptions = [
   { label: '0.38 มิล.', value: '0.38', price: 630 },
@@ -317,8 +317,8 @@ function calculate() {
   lastCalc = { width, height, area, price, location };
 }
 
-async function sendData(contactType) {
-  const payload = {
+function buildPayload(contactType, phone) {
+  return {
     name:        state.userName,
     lineId:      state.lineUserId,
     width:       lastCalc.width,
@@ -327,33 +327,31 @@ async function sendData(contactType) {
     location:    lastCalc.location,
     area:        lastCalc.area,
     price:       lastCalc.price,
-    contactType: contactType || ''
+    contactType: contactType || '',
+    phone:       phone || ''
   };
-  const form = new FormData();
-  form.append('data', JSON.stringify(payload));
-  await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: form });
 }
 
-async function submitToSheets() {
+function postData(payload) {
+  const form = new FormData();
+  form.append('data', JSON.stringify(payload));
+  fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: form });
+}
+
+document.getElementById('calculateBtn').addEventListener('click', calculate);
+
+document.getElementById('submitBtn').addEventListener('click', () => {
   if (!lastCalc.width) { alert('กรุณาคำนวณราคาก่อน'); return; }
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.textContent = '⏳ กำลังส่งข้อมูล...';
 
-// ส่งข้อมูลโดยไม่ต้องรอผล (no-cors ไม่สามารถอ่าน response ได้)
-  sendData('');
+  postData(buildPayload('', ''));
 
-  // แสดงผลทันทีเลย
   document.getElementById('successMsg').classList.add('show');
   document.getElementById('contactSection').classList.add('show');
-  submitBtn.textContent = '✅ ส่งแล้ว'; 
-}
-
-document.getElementById('calculateBtn').addEventListener('click', calculate);
-document.getElementById('submitBtn').addEventListener('click', submitToSheets);
-['widthInput','heightInput','locationInput'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+  submitBtn.textContent = '✅ ส่งแล้ว';
 });
 
 document.getElementById('callBtn').addEventListener('click', () => {
@@ -364,16 +362,17 @@ document.getElementById('callBtn').addEventListener('click', () => {
   btn.disabled = true;
   btn.innerHTML = '<span class="btn-icon">⏳</span><span>กำลังส่ง...</span>';
 
-  sendData('โทรกลับ เบอร์: ' + phone.trim());
+  postData(buildPayload('โทรกลับ', phone.trim()));
+
   btn.innerHTML = '<span class="btn-icon">✅</span><span>รับทราบแล้ว!</span>';
-  alert('✅ ทีมงานจะโทรกลับหาคุณที่เบอร์ ' + phone.trim() + ' เร็วๆ นี้ครับ!');
+  alert('✅ ทีมงานจะโทรกลับที่เบอร์ ' + phone.trim() + ' เร็วๆ นี้ครับ!');
 });
 
 document.getElementById('chatBtn').addEventListener('click', () => {
   try {
     liff.sendMessages([{
       type: 'text',
-      text: 'สนใจสอบถามเพิ่มเติมครับ/ค่ะ'
+      text: 'สนใจสอบถามเพิ่มเติมครับ/ค่ะ 🙏'
     }]).then(() => {
       liff.closeWindow();
     }).catch(() => {
@@ -382,6 +381,10 @@ document.getElementById('chatBtn').addEventListener('click', () => {
   } catch(e) {
     liff.closeWindow();
   }
+});
+
+['widthInput','heightInput','locationInput'].forEach(id => {
+  document.getElementById(id).addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
 });
 
 renderThicknessButtons();

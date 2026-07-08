@@ -341,16 +341,13 @@ async function submitToSheets() {
   submitBtn.disabled = true;
   submitBtn.textContent = '⏳ กำลังส่งข้อมูล...';
 
-  try {
-    await sendData('');
-    document.getElementById('successMsg').classList.add('show');
-    document.getElementById('contactSection').classList.add('show');
-    submitBtn.textContent = '✅ ส่งแล้ว';
-  } catch(err) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '📩 ขอใบเสนอราคาจริง';
-    alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
-  }
+// ส่งข้อมูลโดยไม่ต้องรอผล (no-cors ไม่สามารถอ่าน response ได้)
+  sendData('');
+
+  // แสดงผลทันทีเลย
+  document.getElementById('successMsg').classList.add('show');
+  document.getElementById('contactSection').classList.add('show');
+  submitBtn.textContent = '✅ ส่งแล้ว'; 
 }
 
 document.getElementById('calculateBtn').addEventListener('click', calculate);

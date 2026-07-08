@@ -137,8 +137,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: #f8f8f8; min
 
 <script>
 var LIFF_ID = '2010511935-lg6JhGDv';
-var GAS_URL = 'https://script.google.com/macros/s/AKfycby1tNzhFTXtHLBFcE4yUIXMf0ozygpp617jSLXNdezq9Df3ewpPat5hMNWtMSwQNkTzIQ/exec';
-
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzY1OVSQFu4itS5wY61UxinftCnyQO4m3KH8NFsDxE_AYAL3eDUXYhn-S_zNuVAN0s23w/exec';
 var thicknessOptions = [
   { label: '0.38 มิล.', value: '0.38', price: 630 },
   { label: '0.43 มิล.', value: '0.43', price: 650 },
@@ -263,11 +262,14 @@ function buildPayload(contactType, phone) {
   return {
     name: state.userName, lineId: state.lineUserId,
     width: lastCalc.width, height: lastCalc.height,
-    thickness: state.selectedThickness, location: lastCalc.location,
+    thickness: state.selectedThickness,
+    color: state.selectedColorName,
+    location: lastCalc.location,
     area: lastCalc.area, price: lastCalc.price,
     contactType: contactType || '', phone: phone || ''
   };
 }
+  
 
 function postData(payload) {
   var form = new FormData();

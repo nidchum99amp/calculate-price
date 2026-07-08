@@ -371,13 +371,16 @@ document.getElementById('callBtn').addEventListener('click', () => {
 
 document.getElementById('chatBtn').addEventListener('click', () => {
   try {
-    if (liff.isInClient()) {
+    liff.sendMessages([{
+      type: 'text',
+      text: 'สนใจสอบถามเพิ่มเติมครับ/ค่ะ'
+    }]).then(() => {
       liff.closeWindow();
-    } else {
-      window.location.href = 'https://line.me/R/oaMessage/@Tshutterone';
-    }
+    }).catch(() => {
+      liff.closeWindow();
+    });
   } catch(e) {
-    window.location.href = 'https://line.me/R/oaMessage/@Tshutterone';
+    liff.closeWindow();
   }
 });
 

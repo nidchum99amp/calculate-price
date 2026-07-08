@@ -121,6 +121,36 @@ body {
 .contact-btn-call:hover { box-shadow: 0 8px 20px rgba(230,81,0,0.25); }
 .contact-btn-chat { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #1b5e20; box-shadow: 0 4px 12px rgba(27,94,32,0.15); }
 .contact-btn-chat:hover { box-shadow: 0 8px 20px rgba(27,94,32,0.25); }
+.phone-section {
+  display: none; margin-top: 16px;
+  background: #f9f9f9; border-radius: 12px; padding: 16px;
+}
+.phone-section.show { display: block; }
+.phone-bubble {
+  font-size: 13px; color: #555; line-height: 1.8;
+  margin-bottom: 12px; text-align: center;
+}
+.phone-bubble strong { color: #000; }
+.phone-input {
+  width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 16px; font-family: 'Inter', sans-serif;
+  margin-bottom: 10px; background: #fff; transition: all 0.3s ease;
+  text-align: center; letter-spacing: 1px;
+}
+.phone-input:focus {
+  border-color: #ffd51e; box-shadow: 0 0 0 3px rgba(255,213,30,0.1); outline: none;
+}
+.confirm-call-btn {
+  width: 100%; padding: 12px; background: #e65100;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+  color: #fff; cursor: pointer; transition: all 0.3s ease;
+}
+.confirm-call-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.skip-btn {
+  width: 100%; padding: 8px; background: none; border: none;
+  font-size: 12px; color: #aaa; cursor: pointer; margin-top: 6px;
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -182,6 +212,16 @@ body {
           <span class="btn-icon">💬</span>
           <span>คุยต่อ<br>ใน Line</span>
         </button>
+      </div>
+      <div class="phone-section" id="phoneSection">
+        <p class="phone-bubble">
+          ทิ้งเบอร์ไว้ได้เลยครับ 😊<br>
+          <strong>ทีมงานจะโทรหาคุณเร็วๆ นี้</strong>
+        </p>
+        <input type="tel" class="phone-input" id="phoneInput"
+          placeholder="0XX-XXX-XXXX" maxlength="10" />
+        <button class="confirm-call-btn" id="confirmCallBtn">📞 ส่งเบอร์ให้ทีมงาน</button>
+        <button class="skip-btn" id="skipBtn">ไม่ต้องโทรกลับแล้ว</button>
       </div>
     </div>
   </div>
@@ -309,6 +349,7 @@ function calculate() {
   document.getElementById('resultCard').classList.add('show');
   document.getElementById('successMsg').classList.remove('show');
   document.getElementById('contactSection').classList.remove('show');
+  document.getElementById('phoneSection').classList.remove('show');
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = false;
@@ -342,55 +383,34 @@ document.getElementById('calculateBtn').addEventListener('click', calculate);
 
 document.getElementById('submitBtn').addEventListener('click', () => {
   if (!lastCalc.width) { alert('กรุณาคำนวณราคาก่อน'); return; }
-
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.textContent = '⏳ กำลังส่งข้อมูล...';
-
   postData(buildPayload('', ''));
-
   document.getElementById('successMsg').classList.add('show');
   document.getElementById('contactSection').classList.add('show');
   submitBtn.textContent = '✅ ส่งแล้ว';
 });
 
 document.getElementById('callBtn').addEventListener('click', () => {
-  const phone = prompt('กรุณากรอกเบอร์โทรที่ต้องการให้ติดต่อกลับ:');
-  if (!phone || phone.trim() === '') return;
-
-  const btn = document.getElementById('callBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="btn-icon">⏳</span><span>กำลังส่ง...</span>';
-
-  postData(buildPayload('โทรกลับ', phone.trim()));
-
-  btn.innerHTML = '<span class="btn-icon">✅</span><span>รับทราบแล้ว!</span>';
-  alert('✅ ทีมงานจะโทรกลับที่เบอร์ ' + phone.trim() + ' เร็วๆ นี้ครับ!');
+  document.getElementById('phoneSection').classList.add('show');
+  document.getElementById('phoneInput').focus();
 });
 
-document.getElementById('chatBtn').addEventListener('click', () => {
-  try {
-    liff.sendMessages([{
-      type: 'text',
-      text: 'สนใจสอบถามเพิ่มเติมครับ/ค่ะ 🙏'
-    }]).then(() => {
-      liff.closeWindow();
-    }).catch(() => {
-      liff.closeWindow();
-    });
-  } catch(e) {
-    liff.closeWindow();
+document.getElementById('confirmCallBtn').addEventListener('click', () => {
+  const phone = document.getElementById('phoneInput').value.trim();
+  if (!phone) {
+    alert('ทิ้งเบอร์ไว้ก่อนได้เลยนะครับ 😊'); return;
   }
+  const confirmBtn = document.getElementById('confirmCallBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = '⏳ กำลังส่ง...';
+  postData(buildPayload('โทรกลับ', phone));
+  document.getElementById('callBtn').innerHTML = '<span class="btn-icon">✅</span><span>รับทราบแล้ว!</span>';
+  document.getElementById('phoneSection').classList.remove('show');
+  document.getElementById('phoneInput').value = '';
+  confirmBtn.disabled = false;
+  confirmBtn.textContent = '📞 ส่งเบอร์ให้ทีมงาน';
 });
 
-['widthInput','heightInput','locationInput'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
-});
-
-renderThicknessButtons();
-renderColorButtons();
-updateImagePreview();
-initLiff();
-</script>
-</body>
-</html>
+document.getElementById('skipBtn').addEventListener('click', () => {

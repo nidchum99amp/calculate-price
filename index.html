@@ -306,13 +306,26 @@ function updateImagePreview() {
   }
 }
 
-// render ทันทีไม่รอ LIFF
-renderThicknessButtons();
-renderColorButtons();
-updateImagePreview();
+// รอให้ทุกอย่างโหลดก่อนแล้วค่อย render
+window.addEventListener('DOMContentLoaded', () => {
+  renderThicknessButtons();
+  renderColorButtons();
+  updateImagePreview();
 
-// ===== LIFF init ทีหลัง ไม่บล็อก UI =====
-liff.init({ liffId: LIFF_ID })
+  liff.init({ liffId: LIFF_ID })
+    .then(() => {
+      if (liff.isLoggedIn()) {
+        return liff.getProfile();
+      }
+    })
+    .then(profile => {
+      if (profile) {
+        state.userName = profile.displayName;
+        state.lineUserId = profile.userId;
+      }
+    })
+    .catch(e => console.warn('LIFF error:', e));
+});
   .then(() => {
     if (liff.isLoggedIn()) {
       return liff.getProfile();
